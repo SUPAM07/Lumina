@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📸 Passport Photo Pro (Local Edition)
+# 📸 Lumina (Local Edition)
 
 > ⚡ Generate **print-ready passport photo sheets locally** with AI-powered background removal — no APIs, no uploads, 100% private.
 
@@ -34,7 +34,7 @@
 
 ## 📌 Overview
 
-**Passport Photo Pro (Local Edition)** is a privacy-first desktop web tool that generates **print-ready passport photo sheets** entirely on your local machine.
+**Lumina (Local Edition)** is a privacy-first desktop web tool that generates **print-ready passport photo sheets** entirely on your local machine.
 
 Unlike traditional tools that rely on external APIs or paid services, this application performs **AI-based background removal and image processing locally**, ensuring complete privacy and zero dependency on third-party services.
 
