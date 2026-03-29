@@ -1,0 +1,12 @@
+Starting production server on http://0.0.0.0:5001...
+==== /process endpoint hit ====
+DEBUG: Processing 1 image(s)
+DEBUG: Processing image 1 with 6 copies
+DEBUG: Placed at x=10, y=10
+DEBUG: Placed at x=414, y=10
+DEBUG: Placed at x=818, y=10
+DEBUG: Placed at x=1222, y=10
+DEBUG: Placed at x=1626, y=10
+DEBUG: Placed at x=2030, y=10
+DEBUG: Total pages = 1
+DEBUG: Returning PDF to client
