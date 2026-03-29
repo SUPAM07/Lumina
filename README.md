@@ -44,6 +44,7 @@ Unlike traditional tools that rely on external APIs or paid services, this appli
 
 ```text
 Upload Image → Crop & Adjust → Local AI Background Removal → Enhancement → Sheet Generation → Download
+```bash
 
 ## 🧰 Tech Stack
 
