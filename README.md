@@ -1,20 +1,49 @@
+<div align="center">
+
 # 📸 Passport Photo Pro (Local Edition)
 
-A premium, private, and local-first tool to generate print-ready passport photo sheets. No API keys, no external credits, and no images leave your machine.
+> ⚡ Generate **print-ready passport photo sheets locally** with AI-powered background removal — no APIs, no uploads, 100% private.
+
+![Local First](https://img.shields.io/badge/Privacy-100%25%20Local-green)
+![AI Powered](https://img.shields.io/badge/AI-rembg-blue)
+![Backend](https://img.shields.io/badge/Backend-Flask-black)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
+
+</div>
 
 ---
 
-## 🚀 Key Features
+## 📸 Demo
 
-- **100% Local Processing** — No dependency on `remove.bg`, `Cloudinary`, or any external APIs.
-- **AI Background Removal** — Powered by `rembg` (u2netp) running directly on your CPU.
-- **Per-Photo Adjustments** — Fine-tune **Brightness, Contrast, and Saturation** for *each* photo individually.
-- **Premium Sidebar UI** — A modern, glassmorphic sidebar layout that keeps controls accessible while editing.
-- **In-Browser Cropping** — Perfectly align each photo to the required passport aspect ratio.
-- **Smart Sharpening** — Automatic 1.5x sharpening for crisp, professional results.
-- **Live Preview** — Visual feedback for adjustments reflects directly on each thumbnail.
+<p align="center">
+  <img src="./assets/Lumina.png" width="90%" />
+</p>
 
 ---
+
+## ⚡ Highlights
+
+- 🔒 **100% Local Processing** — No cloud APIs, no data leakage  
+- 🤖 **AI Background Removal** using `rembg` (U2NetP)  
+- 🎨 **Per-Photo Adjustments** — brightness, contrast, saturation  
+- ✂️ **In-browser cropping** with real-time preview  
+- 🧠 **Smart sharpening** for professional-quality output  
+- 📄 **A4 sheet generation** ready for printing  
+
+---
+
+## 📌 Overview
+
+**Passport Photo Pro (Local Edition)** is a privacy-first desktop web tool that generates **print-ready passport photo sheets** entirely on your local machine.
+
+Unlike traditional tools that rely on external APIs or paid services, this application performs **AI-based background removal and image processing locally**, ensuring complete privacy and zero dependency on third-party services.
+
+---
+
+## 🧠 How It Works
+
+```text
+Upload Image → Crop & Adjust → Local AI Background Removal → Enhancement → Sheet Generation → Download
 
 ## 🧰 Tech Stack
 
