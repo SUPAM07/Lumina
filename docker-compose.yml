@@ -1,0 +1,17 @@
+services:
+  lumina:
+    build: .
+    image: lumina:latest
+    container_name: lumina_app
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - DEBUB=False # Explicitly disable Flask debug for Waitress
+    volumes:
+      - .:/app # Helpful for development, can be removed for pure production
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -46,7 +46,48 @@ Unlike traditional tools that rely on external APIs or paid services, this appli
 Upload Image → Crop & Adjust → Local AI Background Removal → Enhancement → Sheet Generation → Download
 ```
 
-## 🧰 Tech Stack
+---
+
+## 🚀 Deployment
+
+Lumina is designed for local use, but can be easily deployed to a home server, VPS, or cloud platform.
+
+### ✅ Option 1: Docker (Recommended)
+This is the easiest way to deploy without worrying about Python environments or AI model paths.
+
+```bash
+# Clone the repository
+git clone https://github.com/SUPAM07/Lumina.git
+cd Lumina
+
+# Build and start the container
+docker-compose up -d --build
+```
+Access the app at `http://localhost:5001`.
+
+### ⚙️ Option 2: Manual (Virtual Environment)
+For users who prefer running directly on their machine:
+
+1. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Launch with Production Server**:
+   ```bash
+   # Waitress is included and will run automatically
+   python3 app.py
+   ```
+
+### ☁️ Option 3: Cloud Hosting (Render/Railway)
+1. Link your GitHub repository.
+2. Use the following build command: `pip install -r requirements.txt`.
+3. Set the start command to: `python3 app.py`.
+4. Expose port `5001`.
+
+---
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 | Layer      | Technology                          |
 |------------|-------------------------------------|
