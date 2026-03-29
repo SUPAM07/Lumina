@@ -13,4 +13,4 @@ limits
 markdown-it-py
 MarkupSafe
 pillow
-rembg
+rembgwaitress

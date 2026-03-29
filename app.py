@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, send_file
 from PIL import Image, ImageOps, ImageEnhance
 from io import BytesIO
 from rembg import remove, new_session
+from waitress import serve
 
 app = Flask(__name__)
 
@@ -189,4 +190,9 @@ def process():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    # Use waitress only if debug is off
+    if app.debug:
+        app.run(host="0.0.0.0", port=5001, debug=True)
+    else:
+        print("Starting production server on http://0.0.0.0:5001...")
+        serve(app, host="0.0.0.0", port=5001)
