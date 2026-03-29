@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PrintPassport</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+    #particles-js {
+      position: fixed; width: 100%; height: 100%;
+      background-color: #0f172a; z-index: -1;
+    }
+    .transition-all { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .glow-shadow { box-shadow: 0 0 20px rgba(59,130,246,0.3), 0 0 10px rgba(59,130,246,0.1); }
+    .photo-card { 
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(8px);
+    }
+    .photo-card:hover { 
+      transform: translateY(-4px) scale(1.02); 
+      background: rgba(30, 41, 59, 0.8);
+      border-color: rgba(59, 130, 246, 0.5);
+    }
+    .preview-img { transition: filter 0.15s ease; }
+    
+    /* Premium Sliders */
+    input[type=range] { -webkit-appearance: none; background: transparent; }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%; height: 6px; cursor: pointer;
+      background: rgba(51, 65, 85, 0.5); border-radius: 3px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 18px; width: 18px; border-radius: 50%;
+      background: #3b82f6; cursor: pointer; -webkit-appearance: none;
+      margin-top: -6px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+      transition: transform 0.2s ease;
+    }
+    input[type=range]:active::-webkit-slider-thumb { transform: scale(1.2); }
+
+    /* Swatches */
+    .color-swatch {
+      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.1); transition: all 0.2s;
+    }
+    .color-swatch.active {
+      transform: scale(1.15); border-color: #3b82f6;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+    }
+
+    .cropper-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 100; display: flex; align-items: center; justify-content: center;
+    }
+    .cropper-modal-box {
+      background: #1f2937; border: 1px solid #374151; border-radius: 1rem;
+      padding: 1.5rem; max-width: 520px; width: 95%; max-height: 90vh; overflow: auto;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white" oncontextmenu="return false">
+
+  <div id="particles-js"></div>
+
+  <!-- Header -->
+  <header class="bg-gray-900/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-10">
+    <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <span class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500">
+          PrintPassport
+        </span>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="relative bg-gray-800/60 backdrop-blur-md border border-gray-700 rounded-2xl shadow-2xl p-6 sm:p-8 max-w-6xl mx-auto">
+      <h2 class="text-3xl font-bold text-center mb-2">Upload Photos</h2>
+      <p class="text-gray-400 text-center text-sm mb-10">Add one or more photos. Set how many copies of each you need.</p>
+
+      <div class="flex flex-col lg:flex-row gap-10 items-start">
+        
+        <!-- Left Column: Media & List -->
+        <div class="flex-1 w-full space-y-8">
+          <!-- Drop Zone -->
+          <div id="dropZone" class="border-2 border-dashed border-gray-600 hover:border-blue-400 bg-gray-900/50 rounded-xl p-8 cursor-pointer transition-all text-center">
+            <input type="file" id="imageInput" class="hidden" accept="image/*" multiple />
+            <div class="flex flex-col items-center">
+              <svg class="w-14 h-14 text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h10a4 4 0 014 4v5a4 4 0 01-4 4h-2m-6 4h6m-3-4v4"/>
+              </svg>
+              <p class="text-lg font-semibold">Drag & Drop or Click to Upload</p>
+              <p class="text-sm text-gray-400 mt-1">Multiple photos supported • JPG, PNG, WEBP</p>
+            </div>
+          </div>
+
+          <!-- Photo Cards List -->
+          <div id="photoList" class="grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
+
+          <!-- Add More Button -->
+          <div id="addMoreWrapper" class="hidden mt-4 text-center">
+            <button id="addMoreBtn" class="text-blue-400 hover:text-blue-300 text-sm border border-blue-400/40 rounded-lg px-6 py-2.5 transition-all hover:bg-blue-400/10">
+              + Add More Photos
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Sidebar Controls -->
+        <div class="w-full lg:w-[380px] shrink-0 sticky top-28 space-y-6">
+          <div class="bg-gray-900/40 rounded-xl border border-gray-700/50 p-6 shadow-lg">
+            
+            <!-- Generate & Actions -->
+            <div class="flex flex-col gap-4 mb-8">
+              <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-8 rounded-xl transition-all transform hover:scale-[1.02] glow-shadow disabled:opacity-50 disabled:scale-100">
+                Generate Sheet
+              </button>
+              <button id="downloadBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-8 rounded-xl transition-all transform hover:scale-[1.02] hidden">
+                Download PDF
+              </button>
+              <div id="loading" class="hidden text-blue-400 font-semibold text-center py-2">Processing images... please wait</div>
+            </div>
+
+            <div class="border-t border-gray-700/50 pt-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-200">Settings</h3>
+                <button id="toggleAdvanced" class="text-blue-400 hover:text-blue-300 transition-all text-xs font-medium px-2 py-1 bg-blue-400/10 rounded-md">Advanced Options</button>
+              </div>
+
+              <!-- Advanced Options Content -->
+              <div id="advancedOptions" class="hidden space-y-6 overflow-hidden transition-all duration-300">
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Width (px)</label>
+                    <input type="number" id="width" value="390" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none"/>
+                  </div>
+                  <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Height (px)</label>
+                    <input type="number" id="height" value="480" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none"/>
+                  </div>
+                  <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Spacing (px)</label>
+                    <input type="number" id="spacing" value="10" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none"/>
+                  </div>
+                  <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Border (px)</label>
+                    <input type="number" id="border" value="2" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none"/>
+                  </div>
+                </div>
+
+                <div class="space-y-3">
+                  <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Background Color</label>
+                  <div id="swatchContainer" class="flex gap-3">
+                    <div class="color-swatch active" style="background: white;" data-color="white" title="White"></div>
+                    <div class="color-swatch" style="background: #2563eb;" data-color="blue" title="Blue"></div>
+                    <div class="color-swatch" style="background: #16a34a;" data-color="green" title="Green"></div>
+                    <div class="color-swatch" style="background: #eab308;" data-color="yellow" title="Yellow"></div>
+                    <input type="hidden" id="bgColor" value="white" />
+                  </div>
+                </div>
+
+                <div class="space-y-5 border-t border-gray-700/50 pt-5">
+                  <div class="space-y-2">
+                    <label class="flex justify-between text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      <span>Brightness</span> <span id="brightVal" class="text-blue-400">1.0</span>
+                    </label>
+                    <input type="range" id="brightness" min="0.5" max="1.5" step="0.05" value="1.0" class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="document.getElementById('brightVal').innerText = this.value; updateFilters()" />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="flex justify-between text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      <span>Contrast</span> <span id="contrastVal" class="text-blue-400">1.0</span>
+                    </label>
+                    <input type="range" id="contrast" min="0.5" max="1.5" step="0.05" value="1.0" class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="document.getElementById('contrastVal').innerText = this.value; updateFilters()" />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="flex justify-between text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      <span>Saturation</span> <span id="saturateVal" class="text-blue-400">1.0</span>
+                    </label>
+                    <input type="range" id="saturation" min="0.5" max="1.5" step="0.05" value="1.0" class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="document.getElementById('saturateVal').innerText = this.value; updateFilters()" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PDF Preview -->
+      <embed id="pdfPreview" type="application/pdf" class="w-full h-[600px] mt-10 hidden rounded-2xl border border-gray-700 shadow-2xl"/>
+    </div>
+  </main>
+
+  <!-- Cropper Modal -->
+  <div id="cropperModal" class="cropper-modal-overlay hidden">
+    <div class="cropper-modal-box">
+      <h3 class="text-lg font-bold mb-3">Crop Photo</h3>
+      <div class="max-h-[400px] overflow-hidden rounded-lg">
+        <img id="cropModalImage" src="" style="max-width:100%; display:block;"/>
+      </div>
+      <div class="flex gap-3 mt-4 justify-end">
+        <button id="cancelCropBtn" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-5 rounded-lg transition-all">Cancel</button>
+        <button id="confirmCropBtn" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-5 rounded-lg transition-all">Crop & Save</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Notification -->
+  <div id="notification" class="fixed bottom-1/2 right-5 text-white py-2 px-4 rounded-lg shadow-lg transform translate-x-[120%] transition-transform duration-500 z-50">
+    <p id="notification-message"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script>
+
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: "#4a5568" }, shape: { type: "circle" },
+        opacity: { value: 0.5, random: true }, size: { value: 3, random: true },
+        line_linked: { enable: true, distance: 150, color: "#718096", opacity: 0.4, width: 1 },
+        move: { enable: true, speed: 2, direction: "none", random: false, straight: false, out_mode: "out" }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" } },
+        modes: { repulse: { distance: 100 }, push: { particles_nb: 4 } }
+      },
+      retina_detect: true
+    });
+
+    // ---- State ----
+    // photos: Array of { id, originalFile, croppedFile, previewUrl, copies }
+    let photos = [];
+    let nextId = 0;
+    let selectedPhotoId = null;
+
+    function selectPhoto(id) {
+      selectedPhotoId = id;
+      const photo = photos.find(p => p.id === id);
+      if (photo) {
+        document.getElementById('brightness').value = photo.brightness;
+        document.getElementById('contrast').value = photo.contrast;
+        document.getElementById('saturation').value = photo.saturation;
+        document.getElementById('brightVal').innerText = photo.brightness;
+        document.getElementById('contrastVal').innerText = photo.contrast;
+        document.getElementById('saturateVal').innerText = photo.saturation;
+      }
+      renderPhotoList();
+    }
+
+    function adjustCopies(id, delta) {
+      const photo = photos.find(p => p.id === id);
+      if (photo) {
+        photo.copies = Math.min(54, Math.max(1, photo.copies + delta));
+        renderPhotoList();
+      }
+    }
+
+    // Cropper modal state
+    let activeCropper = null;
+    let pendingCropId = null;
+
+    // DOM refs
+    const dropZone = document.getElementById('dropZone');
+    const imageInput = document.getElementById('imageInput');
+    const photoList = document.getElementById('photoList');
+    const addMoreWrapper = document.getElementById('addMoreWrapper');
+    const addMoreBtn = document.getElementById('addMoreBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const pdfPreview = document.getElementById('pdfPreview');
+    const loading = document.getElementById('loading');
+    const toggleAdvanced = document.getElementById('toggleAdvanced');
+    const advancedOptions = document.getElementById('advancedOptions');
+    const cropperModal = document.getElementById('cropperModal');
+    const cropModalImage = document.getElementById('cropModalImage');
+    const confirmCropBtn = document.getElementById('confirmCropBtn');
+    const cancelCropBtn = document.getElementById('cancelCropBtn');
+    const notification = document.getElementById('notification');
+    const notifMsg = document.getElementById('notification-message');
+    const feedbackBtn = document.getElementById('feedbackBtn');
+    const feedbackModal = document.getElementById('feedbackModal');
+    const closeModal = document.getElementById('closeModal');
+    const feedbackForm = document.getElementById('feedbackForm');
+
+    // ---- Notifications ----
+    function showNotification(msg, isError = true) {
+      notifMsg.textContent = msg;
+      notification.classList.remove('bg-red-500', 'bg-green-500');
+      notification.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+      notification.classList.remove('translate-x-[120%]');
+      notification.classList.add('translate-x-0');
+      setTimeout(() => {
+        notification.classList.remove('translate-x-0');
+        notification.classList.add('translate-x-[120%]');
+      }, 3000);
+    }
+
+    // ---- Render Photo Cards ----
+    function renderPhotoList() {
+      photoList.innerHTML = '';
+      photos.forEach(photo => {
+        const isSelected = photo.id === selectedPhotoId;
+        const filterStr = `brightness(${photo.brightness}) contrast(${photo.contrast}) saturate(${photo.saturation})`;
+        const card = document.createElement('div');
+        card.className = `photo-card flex flex-col items-stretch border ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/50' : 'border-gray-700/50'} rounded-2xl overflow-hidden shadow-xl cursor-pointer`;
+        card.onclick = () => selectPhoto(photo.id);
+        card.innerHTML = `
+          <div class="relative aspect-[384/480] bg-gray-800/50 overflow-hidden group">
+            <img src="${photo.previewUrl}" class="preview-img w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" style="filter: ${filterStr}" />
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+              <button class="crop-btn bg-blue-500 hover:bg-blue-600 text-white p-2.5 rounded-full shadow-lg transition-all transform hover:scale-110" data-id="${photo.id}" title="Crop">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 3H5c-1.1 0-2 .9-2 2v12m14 4h2c1.1 0 2-.9 2-2V7m-2 10V5c0-1.1-.9-2-2-2H9m-2 14v2c0 1.1.9 2 2 2h12"/></svg>
+              </button>
+              <button class="remove-btn bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-full shadow-lg transition-all transform hover:scale-110" data-id="${photo.id}" title="Remove">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="p-4 bg-gray-900/40 border-t border-gray-700/30">
+            <div class="flex justify-between items-center mb-3">
+              <p class="text-sm font-semibold text-gray-200 truncate pr-2">${photo.originalFile.name}</p>
+              <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${photo.croppedFile ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">${photo.croppedFile ? 'Cropped' : 'Original'}</span>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Copies</label>
+              <div class="flex items-center bg-gray-800 rounded-lg p-1">
+                <button class="px-2 text-gray-400 hover:text-white" onclick="event.stopPropagation(); adjustCopies(${photo.id}, -1)">-</button>
+                <input type="number" value="${photo.copies}" min="1" max="54"
+                  class="bg-transparent w-10 text-center text-sm font-bold focus:outline-none"
+                  data-id="${photo.id}" onclick="event.stopPropagation()" />
+                <button class="px-2 text-gray-400 hover:text-white" onclick="event.stopPropagation(); adjustCopies(${photo.id}, 1)">+</button>
+              </div>
+            </div>
+          </div>
+        `;
+        photoList.appendChild(card);
+      });
+
+      // Bind copies inputs
+      photoList.querySelectorAll('input[type=number]').forEach(input => {
+        input.addEventListener('change', e => {
+          const id = parseInt(e.target.dataset.id);
+          const photo = photos.find(p => p.id === id);
+          if (photo) photo.copies = Math.max(1, parseInt(e.target.value) || 1);
+        });
+      });
+
+      // Bind crop buttons
+      photoList.querySelectorAll('.crop-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const id = parseInt(e.currentTarget.dataset.id);
+          openCropper(id);
+        });
+      });
+
+      // Bind remove buttons
+      photoList.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const id = parseInt(e.currentTarget.dataset.id);
+          photos = photos.filter(p => p.id !== id);
+          if (selectedPhotoId === id) selectedPhotoId = null;
+          renderPhotoList();
+          if (photos.length === 0) addMoreWrapper.classList.add('hidden');
+        });
+      });
+
+      addMoreWrapper.classList.toggle('hidden', photos.length === 0);
+      updateFilters();
+    }
+
+    // ---- Live Preview Filters ----
+    function updateFilters() {
+      if (selectedPhotoId === null) {
+        showNotification("Select a photo first to apply filters.");
+        return;
+      }
+      const photo = photos.find(p => p.id === selectedPhotoId);
+      if (!photo) return;
+
+      photo.brightness = document.getElementById('brightness').value;
+      photo.contrast = document.getElementById('contrast').value;
+      photo.saturation = document.getElementById('saturation').value;
+      
+      const filterStr = `brightness(${photo.brightness}) contrast(${photo.contrast}) saturate(${photo.saturation})`;
+      
+      // Update only the selected photo's preview
+      const card = document.querySelector(`.photo-card.border-blue-500 img`);
+      if (card) card.style.filter = filterStr;
+    }
+
+    // ---- Add Files ----
+    function addFiles(files) {
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      let added = 0;
+      Array.from(files).forEach(file => {
+        if (!validTypes.includes(file.type)) return;
+        const photo = {
+          id: nextId++,
+          originalFile: file,
+          croppedFile: null,
+          previewUrl: URL.createObjectURL(file),
+          copies: 6,
+          brightness: 1.0,
+          contrast: 1.0,
+          saturation: 1.0
+        };
+        photos.push(photo);
+        if (photos.length === 1) selectedPhotoId = photo.id;
+        added++;
+      });
+      if (added === 0) showNotification("Please upload valid image files (JPG, PNG, WEBP).");
+      renderPhotoList();
+    }
+
+    // ---- Drop Zone ----
+    dropZone.addEventListener('click', () => imageInput.click());
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('border-blue-400', 'bg-gray-700/50');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-blue-400', 'bg-gray-700/50');
+    });
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-400', 'bg-gray-700/50');
+      addFiles(e.dataTransfer.files);
+    });
+    imageInput.addEventListener('change', () => {
+      addFiles(imageInput.files);
+      imageInput.value = '';
+    });
+    addMoreBtn.addEventListener('click', () => imageInput.click());
+
+    // ---- Cropper Modal ----
+    function openCropper(id) {
+      const photo = photos.find(p => p.id === id);
+      if (!photo) return;
+      pendingCropId = id;
+      cropModalImage.src = photo.previewUrl;
+      cropperModal.classList.remove('hidden');
+      if (activeCropper) activeCropper.destroy();
+      activeCropper = new Cropper(cropModalImage, {
+        aspectRatio: 384 / 472,
+        viewMode: 1,
+        dragMode: 'move',
+        autoCropArea: 1,
+      });
+    }
+
+    confirmCropBtn.addEventListener('click', () => {
+      if (!activeCropper || pendingCropId === null) return;
+      const canvas = activeCropper.getCroppedCanvas({ width: 400, height: 480 });
+      canvas.toBlob(blob => {
+        const photo = photos.find(p => p.id === pendingCropId);
+        if (!photo) return;
+        photo.croppedFile = new File([blob], 'cropped-' + photo.originalFile.name, { type: 'image/png' });
+        photo.previewUrl = URL.createObjectURL(blob);
+        activeCropper.destroy();
+        activeCropper = null;
+        pendingCropId = null;
+        cropperModal.classList.add('hidden');
+        renderPhotoList();
+        showNotification("Photo cropped successfully.", false);
+      }, 'image/png');
+    });
+
+    cancelCropBtn.addEventListener('click', () => {
+      if (activeCropper) { activeCropper.destroy(); activeCropper = null; }
+      pendingCropId = null;
+      cropperModal.classList.add('hidden');
+    });
+
+    // ---- Advanced Options ----
+    toggleAdvanced.addEventListener('click', () => {
+      const visible = advancedOptions.style.display === 'block';
+      advancedOptions.style.display = visible ? 'none' : 'block';
+      toggleAdvanced.textContent = visible ? 'Advanced Options' : 'Hide Advanced Options';
+    });
+
+    // ---- Generate PDF ----
+    generateBtn.addEventListener('click', () => {
+      if (photos.length === 0) {
+        showNotification("Please upload at least one photo.");
+        return;
+      }
+
+      const formData = new FormData();
+      photos.forEach((photo, i) => {
+        // Use cropped file if available, else original
+        formData.append(`image_${i}`, photo.croppedFile || photo.originalFile);
+        formData.append(`copies_${i}`, photo.copies);
+        formData.append(`brightness_${i}`, photo.brightness);
+        formData.append(`contrast_${i}`, photo.contrast);
+        formData.append(`saturation_${i}`, photo.saturation);
+      });
+
+      loading.classList.remove('hidden');
+      generateBtn.disabled = true;
+      downloadBtn.classList.add('hidden');
+      pdfPreview.classList.add('hidden');
+
+      fetch('/process', { method: 'POST', body: formData })
+        .then(async response => {
+          if (response.status === 429) { showNotification("Server Daily Quota Exceeded. Please try again later."); return null; }
+          if (response.status === 410) { showNotification("Cannot Detect Face/Background in one of the images."); return null; }
+          if (response.status === 500) { showNotification("Internal Error, try again later."); return null; }
+          if (!response.ok) throw new Error("Processing failed.");
+          return response.blob();
+        })
+        .then(blob => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          pdfPreview.classList.remove('hidden');
+          pdfPreview.src = url;
+          downloadBtn.classList.remove('hidden');
+          downloadBtn.onclick = () => {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'passport-sheet.pdf';
+            link.click();
+          };
+          showNotification("PDF generated successfully!", false);
+        })
+        .catch(err => {
+          console.error(err);
+          showNotification("Image processing failed. Try again later.");
+        })
+        .finally(() => {
+          loading.classList.add('hidden');
+          generateBtn.disabled = false;
+        });
+    });
+
+    // ---- Swatches ----
+    document.querySelectorAll('.color-swatch').forEach(sw => {
+      sw.addEventListener('click', () => {
+        document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+        sw.classList.add('active');
+        document.getElementById('bgColor').value = sw.dataset.color;
+      });
+    });
+  </script>
+</body>
+</html>
